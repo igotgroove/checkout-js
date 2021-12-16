@@ -7,8 +7,10 @@ import { Button, ButtonVariant } from '../ui/button';
 import { Fieldset, Legend } from '../ui/form';
 
 import { ShippingOptions } from './shippingOption';
+import { grooveShowCalendar, GrooveCalendarButton } from '../checkout/CheckoutGroove';
 
 export interface ShippingFormFooterProps {
+    consignments: any[];
     cartHasChanged: boolean;
     isMultiShippingMode: boolean;
     shouldShowOrderComments: boolean;
@@ -26,6 +28,7 @@ class ShippingFormFooter extends PureComponent<ShippingFormFooterProps> {
             shouldShowShippingOptions = true,
             shouldDisableSubmit,
             isLoading,
+            consignments,
         } = this.props;
 
         return <>
@@ -52,6 +55,8 @@ class ShippingFormFooter extends PureComponent<ShippingFormFooterProps> {
                     shouldShowShippingOptions={ shouldShowShippingOptions }
                 />
             </Fieldset>
+            
+            { grooveShowCalendar(consignments) && <GrooveCalendarButton /> }
 
             { shouldShowOrderComments &&
                 <OrderComments /> }

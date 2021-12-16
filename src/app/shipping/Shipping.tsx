@@ -26,6 +26,7 @@ export interface ShippingProps {
     onUnhandledError(error: Error): void;
     onSignIn(): void;
     navigateNextStep(isBillingSameAsShipping: boolean): void;
+    grooveCheckout:any;
 }
 
 export interface WithCheckoutShippingProps {
