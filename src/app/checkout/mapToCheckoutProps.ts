@@ -4,7 +4,7 @@ import { createSelector } from 'reselect';
 import { EMPTY_ARRAY } from '../common/utility';
 
 import getCheckoutStepStatuses from './getCheckoutStepStatuses';
-import { WithCheckoutProps } from './Checkout';
+import { WithCheckoutProps } from './CheckoutGC';
 import { CheckoutContextProps } from './CheckoutContext';
 
 export default function mapToCheckoutProps(
