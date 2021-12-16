@@ -8,7 +8,7 @@ import { createErrorLogger, ErrorBoundary, ErrorLogger } from '../common/error';
 import { createEmbeddedCheckoutStylesheet, createEmbeddedCheckoutSupport } from '../embeddedCheckout';
 import { getLanguageService, LocaleProvider } from '../locale';
 
-import Checkout from './Checkout';
+import Checkout from './CheckoutGC';
 import CheckoutProvider from './CheckoutProvider';
 
 export interface CheckoutAppProps {
