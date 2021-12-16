@@ -150,6 +150,7 @@ class SingleShippingForm extends PureComponent<SingleShippingFormProps & WithLan
                 </Fieldset>
 
                 <ShippingFormFooter
+                    consignments={ consignments }
                     cartHasChanged={ cartHasChanged }
                     isLoading={ isLoading || isUpdatingShippingData }
                     isMultiShippingMode={ false }

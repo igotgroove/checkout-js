@@ -145,6 +145,7 @@ class MultiShippingForm extends PureComponent<MultiShippingFormProps & WithLangu
                     </ul>
 
                     <ShippingFormFooter
+                        consignments={ consignments }
                         cartHasChanged={ cartHasChanged }
                         isLoading={ isLoading }
                         isMultiShippingMode={ true }
