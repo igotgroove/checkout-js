@@ -24,6 +24,8 @@ import CheckoutStepStatus from './CheckoutStepStatus';
 import CheckoutStepType from './CheckoutStepType';
 import CheckoutSupport from './CheckoutSupport';
 
+import { GrooveModal, GrooveCheckout, grooveCompletedStep, grooveCheckoutValues, grooveDidUpdate, grooveSnapshot, ReConnectElement } from "./CheckoutGroove"
+
 const Billing = lazy(() => retry(() => import(
     /* webpackChunkName: "billing" */
     '../billing/Billing'
@@ -75,6 +77,7 @@ export interface CheckoutState {
     isCartEmpty: boolean;
     isRedirecting: boolean;
     hasSelectedShippingOptions: boolean;
+    grooveCheckout: GrooveCheckout;
 }
 
 export interface WithCheckoutProps {
@@ -106,7 +109,15 @@ class Checkout extends Component<CheckoutProps & WithCheckoutProps & WithLanguag
         isRedirecting: false,
         isMultiShippingMode: false,
         hasSelectedShippingOptions: false,
+        grooveCheckout: {...grooveCheckoutValues},
     };
+
+    setGrooveState(grooveState:Partial<GrooveCheckout>) {
+        this.setState({ grooveCheckout: {
+            ...this.state.grooveCheckout,
+            ...grooveState
+        }});
+    }
 
     private embeddedMessenger?: EmbeddedCheckoutMessenger;
     private unsubscribeFromConsignments?: () => void;
@@ -181,6 +192,40 @@ class Checkout extends Component<CheckoutProps & WithCheckoutProps & WithLanguag
         } catch (error) {
             this.handleUnhandledError(error);
         }
+    }
+
+    async getSnapshotBeforeUpdate(_: any, __:any): Promise<any> {
+        const snapshot:grooveSnapshot = { updateCustomShipping: false };
+        switch (this.state.activeStepType) {
+            case CheckoutStepType.Shipping:
+                snapshot.updateCustomShipping = true;
+                setTimeout(() => {                    
+                    // timeout prevents 'broken button'; on first render
+                    ReConnectElement({
+                        id: "groove-custom-shipping-btn",
+                        tagName: "button", 
+                        onclick: ()=> this.setGrooveState({ shipDate: undefined, showCalendar: true, message: undefined })
+                    });
+                    ReConnectElement({
+                        id: "groove-custom-message-p",
+                        tagName: "p",
+                        innerHTML: this.state.grooveCheckout.message || "please select a shipping day before continuing"                            
+                    });
+                }, 1);
+                break;
+            default:
+                snapshot.updateCustomShipping = false;
+                break;
+        }
+        return snapshot;
+    }
+
+    async componentDidUpdate(prevProps: any, prevState: any, snapshot: Promise<grooveSnapshot>) {
+        grooveDidUpdate({
+            snapshot,
+            previous: { props: prevProps, state: prevState },
+            current: { props: this.props, state: this.state }
+        });
     }
 
     render(): ReactNode {
@@ -264,9 +309,15 @@ class Checkout extends Component<CheckoutProps & WithCheckoutProps & WithLanguag
             return this.renderShippingStep(step);
 
         case CheckoutStepType.Billing:
+            if (!grooveCompletedStep(CheckoutStepType.Shipping, this.props, this.state.grooveCheckout)) {
+                this.navigateToStep(CheckoutStepType.Shipping);
+            }
             return this.renderBillingStep(step);
 
         case CheckoutStepType.Payment:
+            if (!grooveCompletedStep(CheckoutStepType.Shipping, this.props, this.state.grooveCheckout)) {
+                this.navigateToStep(CheckoutStepType.Shipping);
+            }
             return this.renderPaymentStep(step);
 
         default:
@@ -358,6 +409,12 @@ class Checkout extends Component<CheckoutProps & WithCheckoutProps & WithLanguag
                         onSignIn={ this.handleShippingSignIn }
                         onToggleMultiShipping={ this.handleToggleMultiShipping }
                         onUnhandledError={ this.handleUnhandledError }
+                        grooveCheckout={this.state.grooveCheckout}
+                    />
+                    <GrooveModal
+                    checkoutState={this.state}
+                    checkoutProps={this.props}
+                    onChange={(shipDate: Date) => this.setGrooveState({ shipDate, showCalendar: false, message: `selected ${shipDate}` })} 
                     />
                 </LazyContainer>
             </CheckoutStep>
