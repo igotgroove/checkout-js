@@ -6,6 +6,8 @@ import { Modal } from "../ui/modal"
 import DynamicFormFieldType from '../ui/form/DynamicFormFieldType';
 import DynamicInput from "../ui/form/DynamicInput";
 
+import { createCheckoutService } from '@bigcommerce/checkout-sdk';
+
 // functions, methods, components, notes, etc...
 
 /**
@@ -279,19 +281,33 @@ const grooveDidUpdate = ({
 };
 
 
+const bcService = createCheckoutService();
 
 const GrooveModal = ({checkoutState, onChange, ...rest }: any) => {
     let props = rest?.checkoutProps;
-    
+    let cart_id = props?.cart?.id;
     const [modalState, setModalState] = React.useState({ selected: '' });
-
+    const [availableShippingOptions, setAvailableShippingOptions] = React.useState([]);
+    const [state, setState] = React.useState<{ [key: string]: any; }>({ data: undefined});
     React.useEffect(() => {
-        console.log("MODAL");
-        console.dir(checkoutState);
-        console.log(`SELECTED : ${modalState.selected}`);
-        if(props) {
-            console.log("PROPS");
-            console.dir(props);
+        if (process.env.NODE_ENV === "development") {
+            console.log("MODAL");
+            console.dir(checkoutState);
+            console.log(`SELECTED : ${modalState.selected}`);
+            
+        }
+        let c = props?.consignments?.reduce((c:any)=> c);
+        if(c?.availableShippingOptions) {
+            setAvailableShippingOptions(c.availableShippingOptions);
+            console.log({cart_id});
+            bcService.loadCheckout(cart_id).then((st:any)=> setState(st));
+
+        }
+        if (state.data) {
+            console.log('[GROOVE] loaded service for cart', cart_id)
+            console.log(state.data?.getCheckout());
+            bcService.loadPaymentMethods().then((payments:any)=>console.log(payments.data.getPaymentMethods()));
+
         }
     }, [checkoutState.grooveCheckout, modalState]);
 
@@ -318,9 +334,8 @@ const GrooveModal = ({checkoutState, onChange, ...rest }: any) => {
                 fieldType={DynamicFormFieldType.dropdown}
                 options={[
                     {label: "--Please choose an option--", value: ""},
-                    {label: "UPS Ground", value: "ups-ground" },
-                    {label: "UPS Second Day Air", value: "ups-second" },
-                    {label: "UPS Next Day Air", value: "ups-next" },
+                    ...availableShippingOptions.map((asm:any) => 
+                        ({label: `${asm.description} $${asm.cost.toFixed(2)}`, value: asm.description }))
                 ]}
                 value={modalState.selected}
                 onChange={localOnChange}
@@ -408,7 +423,7 @@ const GrooveCalendar = (props: any) => {
             selected={props.selected}
             onChange={props.onChange}
             inline
-        // withPortal
+            withPortal
         >
             <div style={{ color: "red" }}>Select a shipping day</div>
         </DatePicker>
@@ -435,7 +450,7 @@ const GrooveCalendarButton = (props: any) => {
     );
     return (
         <div id="div-before-comments">
-            <h4 id="groove-custom-message-h4">Thank you for order,</h4>
+            {/* <h4 id="groove-custom-message-h4">Thank you for order,</h4> */}
             {props.showCalendar ? renderCalendar() : renderButton()}
             <p id="groove-custom-message-p"></p>
         </div>

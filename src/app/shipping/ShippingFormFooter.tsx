@@ -6,7 +6,7 @@ import { Alert, AlertType } from '../ui/alert';
 import { Button, ButtonVariant } from '../ui/button';
 import { Fieldset, Legend } from '../ui/form';
 
-import { ShippingOptions } from './shippingOption';
+// import { ShippingOptions } from './shippingOption';
 import { grooveShowCalendar, GrooveCalendarButton } from '../checkout/CheckoutGroove';
 
 export interface ShippingFormFooterProps {
@@ -23,9 +23,9 @@ class ShippingFormFooter extends PureComponent<ShippingFormFooterProps> {
     render(): ReactNode {
         const {
             cartHasChanged,
-            isMultiShippingMode,
+            // isMultiShippingMode,
             shouldShowOrderComments,
-            shouldShowShippingOptions = true,
+            // shouldShowShippingOptions = true,
             shouldDisableSubmit,
             isLoading,
             consignments,
@@ -49,11 +49,11 @@ class ShippingFormFooter extends PureComponent<ShippingFormFooterProps> {
                     </>
                 }
             >
-                <ShippingOptions
+                {/* <ShippingOptions
                     isMultiShippingMode={ isMultiShippingMode }
                     isUpdatingAddress={ isLoading }
                     shouldShowShippingOptions={ shouldShowShippingOptions }
-                />
+                /> */}
             </Fieldset>
             
             { grooveShowCalendar(consignments) && <GrooveCalendarButton /> }
